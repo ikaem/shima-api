@@ -2,16 +2,16 @@ const users: { username: string; rooms: string[] }[] = [];
 
 // users.push({ username: "kaem", rooms: ["lobby"] });
 
+const rooms = ["lobby"];
+
 export const addUserToRoom = (username: string, room: string) => {
+  // first check if room exists at all
+
+  if (!rooms.includes(room)) return { error: "This room does not exist" };
+
   const isUserExist = users.find((user) => user.username);
 
-  if (!isUserExist) {
-    users.push({
-      username,
-      rooms: [room],
-    });
-    return { username };
-  }
+  if (!isUserExist) return { error: "This user does not exist" };
 
   const isUserInRoom = isUserExist.rooms.includes(room);
 
@@ -27,4 +27,46 @@ export const addUserToRoom = (username: string, room: string) => {
   users[userIndex] = isUserExist;
 
   return { username };
+};
+
+export const reserveUsername = (username: string) => {
+  const isUsernameExist = users.find((user) => {
+    return user.username === username;
+  });
+
+  if (isUsernameExist)
+    return {
+      error: "This username is taken",
+    };
+
+  users.push({
+    username,
+    rooms: [],
+  });
+
+  return {
+    newUser: username,
+  };
+};
+
+export const createRoom = (roomName: string) => {
+  roomName = roomName.trim();
+
+  // check if this room already exists
+  const isRoomExist = rooms.includes(roomName);
+
+  if (isRoomExist)
+    return {
+      error: "Room name is already taken",
+    };
+
+  // if it doesnt exist, we add to the array
+
+  rooms.push(roomName);
+
+  //   and we finally can return room name if all is good .
+
+  return {
+    roomName,
+  };
 };

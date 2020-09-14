@@ -1,9 +1,6 @@
 import express from "express";
 import cors from "cors";
 import http from "http";
-// import socketio from "socket.io";
-
-
 
 import routes from "./router";
 import ioServer from "./socket-io/server";
@@ -11,6 +8,8 @@ import ioServer from "./socket-io/server";
 const app = express();
 
 app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }))
 app.use(routes);
 
 const server = http.createServer(app);
