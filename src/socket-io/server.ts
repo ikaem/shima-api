@@ -1,7 +1,7 @@
 import socketio from "socket.io";
 import http from "http";
 
-import { addUserToRoom, createRoom } from "./rooms";
+import { addUserToRoom, createRoom, removeUser } from "./rooms";
 
 const ioServer = (server: http.Server) => {
   const io = socketio(server);
@@ -11,29 +11,11 @@ const ioServer = (server: http.Server) => {
 
     // listening for events
     socket.on("join", (data: { name: string; room: string }, callback) => {
-
-        // first we should check if the room exists at all
-
-
-
-
-      // here we check that the user is not in the room already
-
       const { username, error } = addUserToRoom(data.name, data.room);
 
-      console.log("test error", error)
-
-      // if error, we send callback to frontend, and we return
       if (error) return callback({ error });
 
-      // if there is no error, we will join, because then it can be only username
-
       socket.join(data.room, () => {
-        // console.log(socket.rooms);
-
-        // console.log(data.name, "has joined room:", data.room)
-        // console.log(socket.rooms)
-
         socket.emit("adminMessage", {
           message: { name: "admin", content: `Welcome` },
           room: data.room,
@@ -56,27 +38,11 @@ const ioServer = (server: http.Server) => {
       });
 
       return callback({ roomName: data.room });
-
-      //   io.to(data.room).emit("adminMessage", {
-      //     name: "admin",
-      //     content: `This will work first time, on first app run`,
-      //     room: data.room,
-      //   });
-
-      //   socket.to(data.room).emit("adminMessage", {
-      //     name: "admin",
-      //     content: `This will not work first time on first app run, but subsequent messaging will work`,
-      //     room: data.room,
-      //   });
     });
 
     socket.on(
       "message",
       (data: { name: string; room: string; message: string }) => {
-        // console.log("this is message from the room:", data.message);
-
-        // sending message back to the room on the frontend...
-
         io.to(data.room).emit("roomMessage", {
           room: data.room,
           message: {
@@ -90,8 +56,6 @@ const ioServer = (server: http.Server) => {
     socket.on(
       "createRoom",
       (data: { name: string; room: string }, callback) => {
-        // console.log(data);
-
         const { error, roomName } = createRoom(data.room);
 
         if (error) return callback({ error });
@@ -104,11 +68,6 @@ const ioServer = (server: http.Server) => {
         if (addToRoomError) return callback({ error: addToRoomError });
 
         socket.join(data.room, () => {
-          // console.log(socket.rooms);
-
-          // console.log(data.name, "has joined room:", data.room)
-          // console.log(socket.rooms)
-
           socket.emit("adminMessage", {
             message: { name: "admin", content: `Welcome` },
             room: data.room,
@@ -135,8 +94,30 @@ const ioServer = (server: http.Server) => {
     );
 
     // disconnect event on socket
-    socket.on("disconnect", () => {
+    socket.on("disconnect", (data: { username: string }) => {
       console.log("the socket has disconnected");
+
+      // remove user from users object
+
+      const { error, username } = removeUser(data.username);
+
+      if (error) console.log("There is no such user");
+
+      // emit message that this user has left
+
+      io.emit("adminMessage", {
+        message: {
+          name: "admin",
+          content: `${username} has left the chat`,
+        },
+        room: "lobby",
+      });
+
+      // close the underlying connection
+
+      setTimeout(() => {
+        socket.disconnect(true);
+      }, 2000);
     });
   });
 

@@ -6,10 +6,9 @@ const rooms = ["lobby"];
 
 export const addUserToRoom = (username: string, room: string) => {
   // first check if room exists at all
-
   if (!rooms.includes(room)) return { error: "This room does not exist" };
 
-  const isUserExist = users.find((user) => user.username);
+  const isUserExist = users.find((user) => user.username === username);
 
   if (!isUserExist) return { error: "This user does not exist" };
 
@@ -21,7 +20,6 @@ export const addUserToRoom = (username: string, room: string) => {
   isUserExist.rooms.push(room);
 
   // replace old user object with new user object
-
   const userIndex = users.findIndex((user) => user.username);
 
   users[userIndex] = isUserExist;
@@ -61,12 +59,25 @@ export const createRoom = (roomName: string) => {
     };
 
   // if it doesnt exist, we add to the array
-
   rooms.push(roomName);
 
   //   and we finally can return room name if all is good .
-
   return {
     roomName,
   };
+};
+
+export const removeUser = (username: string) => {
+  username = username.trim();
+  
+  // find index of the user
+  const userIndex = users.findIndex((user) => user.username === username);
+
+  if (userIndex < 0) return { error: "No such user" };
+
+  // splice 1 object at index place
+
+  users.splice(userIndex, 1);
+
+  return { username };
 };
