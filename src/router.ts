@@ -11,11 +11,7 @@ router.post("/join", async (req, res) => {
     body: { username },
   } = req;
 
-  console.log("username this", username)
-
   const { newUser, error } = reserveUsername(username as string);
-
-  console.log( newUser)
 
   if (error) return res.json({ username, message: error });
 
