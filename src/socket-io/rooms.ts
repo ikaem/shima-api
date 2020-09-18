@@ -1,8 +1,16 @@
 const users: { username: string; rooms: string[] }[] = [];
+const users2: { username: string, socketID: string; rooms: string[] }[] = [];
 
 // users.push({ username: "kaem", rooms: ["lobby"] });
 
 const rooms = ["lobby"];
+const rooms2 = [
+  {
+    name: "lobby",
+    id: 1,
+    messages: [{ author: "admin", content: "have fun everyone" }],
+  },
+];
 
 export const addUserToRoom = (username: string, room: string) => {
   // first check if room exists at all

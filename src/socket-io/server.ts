@@ -97,7 +97,7 @@ const ioServer = (server: http.Server) => {
     socket.on("disconnect", (data: { name: string }) => {
       console.log("the socket has disconnected");
 
-      console.log("this is name on disconnect:", data.name)
+      console.log("this is name on disconnect:", data.name);
 
       // remove user from users object
 
