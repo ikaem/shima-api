@@ -13,9 +13,9 @@ router.post("/join", async (req, res) => {
 
   const { newUser, error } = reserveUsername(username as string);
 
-  if (error) return res.json({ username, message: error });
+  if (error) return res.json({ username: newUser, message: error });
 
-  res.json({ username, message: "user has successfully joined the chat" });
+  res.json({ username: newUser, message: "user has successfully joined the chat" });
 });
 
 export default router;

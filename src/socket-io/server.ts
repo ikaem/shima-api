@@ -7,37 +7,49 @@ const ioServer = (server: http.Server) => {
   const io = socketio(server);
 
   io.on("connect", (socket) => {
+    // we could use handshake to set username's id inside the user's object in the users array
     console.log("We have a connection", socket.id);
+    console.log("This is the handshake", socket.handshake.query.username);
 
     // listening for events
-    socket.on("join", (data: { name: string; room: string }, callback) => {
-      const { username, error } = addUserToRoom(data.name, data.room);
+    socket.on("join", async (data: { name: string; room: string }, ack) => {
+      const { username, error } = addUserToRoom(
+        data.name,
+        data.room,
+        socket.id
+      );
 
-      if (error) return callback({ error });
+      if (error) return ack({ error });
 
-      socket.join(data.room, () => {
-        socket.emit("adminMessage", {
-          message: { name: "admin", content: `Welcome` },
-          room: data.room,
-        });
-        socket.to(data.room).emit("adminMessage", {
-          message: {
-            name: "admin",
-            content: `${data.name} "has joined the room`,
-          },
-          room: data.room,
-        });
+      await new Promise((resolve) =>
+        resolve(
+          socket.join(data.room, () => {
+            socket.emit("adminMessage", {
+              message: { name: "admin", content: `Welcome` },
+              room: data.room,
+            });
+            socket.to(data.room).emit("adminMessage", {
+              message: {
+                name: "admin",
+                content: `${data.name} "has joined the room`,
+              },
+              room: data.room,
+            });
 
-        io.to(data.room).emit("adminMessage", {
-          message: {
-            name: "admin",
-            content: `You all have fun`,
-          },
-          room: data.room,
-        });
-      });
+            io.to(data.room).emit("adminMessage", {
+              message: {
+                name: "admin",
+                content: `You all have fun`,
+              },
+              room: data.room,
+            });
+          })
+        )
+      );
 
-      return callback({ roomName: data.room });
+      if (!Object.keys(socket.rooms).includes(data.room)) return ack({ error });
+
+      return ack({ roomName: data.room });
     });
 
     socket.on(
@@ -55,53 +67,62 @@ const ioServer = (server: http.Server) => {
 
     socket.on(
       "createRoom",
-      (data: { name: string; room: string }, callback) => {
+      async (data: { name: string; room: string }, ack) => {
         const { error, roomName } = createRoom(data.room);
 
-        if (error) return callback({ error });
+        if (error) return ack({ error });
 
         const { error: addToRoomError, username } = addUserToRoom(
           data.name,
           roomName as string
         );
 
-        if (addToRoomError) return callback({ error: addToRoomError });
+        if (addToRoomError) return ack({ error: addToRoomError });
 
-        socket.join(data.room, () => {
-          socket.emit("adminMessage", {
-            message: { name: "admin", content: `Welcome` },
-            room: data.room,
-          });
-          socket.to(data.room).emit("adminMessage", {
-            message: {
-              name: "admin",
-              content: `${data.name} "has joined the room`,
-            },
-            room: data.room,
-          });
+        await new Promise((resolve) =>
+          resolve(
+            socket.join(data.room, () => {
+              socket.emit("adminMessage", {
+                message: { name: "admin", content: `Welcome` },
+                room: data.room,
+              });
+              socket.to(data.room).emit("adminMessage", {
+                message: {
+                  name: "admin",
+                  content: `${data.name} "has joined the room`,
+                },
+                room: data.room,
+              });
 
-          io.to(data.room).emit("adminMessage", {
-            message: {
-              name: "admin",
-              content: `You all have fun`,
-            },
-            room: data.room,
-          });
-        });
+              io.to(data.room).emit("adminMessage", {
+                message: {
+                  name: "admin",
+                  content: `You all have fun`,
+                },
+                room: data.room,
+              });
+            })
+          )
+        );
 
-        return callback({ roomName });
+        if (!Object.keys(socket.rooms).includes(data.room))
+          return ack({ error });
+
+        return ack({ roomName: data.room });
       }
     );
 
     // disconnect event on socket
-    socket.on("disconnect", (data: { name: string }) => {
+    // socket.on("disconnect", (data: { name: string }) => {
+    socket.on("disconnect", () => {
       console.log("the socket has disconnected");
 
-      console.log("this is name on disconnect:", data.name)
+      // console.log("this is name on disconnect:", data.name);
 
       // remove user from users object
 
-      const { error, username } = removeUser(data.name);
+      // const { error, username } = removeUser(data.name);
+      const { error, username } = removeUser(socket.id);
 
       if (error) console.log("There is no such user");
 
@@ -110,7 +131,7 @@ const ioServer = (server: http.Server) => {
       io.emit("adminMessage", {
         message: {
           name: "admin",
-          content: `${socket.id} has left the chat`,
+          content: `${username} has left the chat, sure.`,
         },
         room: "lobby",
       });
