@@ -131,7 +131,7 @@ const ioServer = (server: http.Server) => {
       io.emit("adminMessage", {
         message: {
           name: "admin",
-          content: `${username} has left the chat`,
+          content: `${username} has left the chat, sure.`,
         },
         room: "lobby",
       });
