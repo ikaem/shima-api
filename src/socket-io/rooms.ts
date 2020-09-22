@@ -68,8 +68,9 @@ export const createRoom = (roomName: string) => {
 };
 
 export const removeUser = (username: string) => {
+  if (!username) return { error: "No username provided" };
   username = username.trim();
-  
+
   // find index of the user
   const userIndex = users.findIndex((user) => user.username === username);
 

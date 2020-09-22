@@ -94,12 +94,14 @@ const ioServer = (server: http.Server) => {
     );
 
     // disconnect event on socket
-    socket.on("disconnect", (data: { username: string }) => {
+    socket.on("disconnect", (data: { name: string }) => {
       console.log("the socket has disconnected");
+
+      console.log("this is name on disconnect:", data.name)
 
       // remove user from users object
 
-      const { error, username } = removeUser(data.username);
+      const { error, username } = removeUser(data.name);
 
       if (error) console.log("There is no such user");
 
@@ -108,7 +110,7 @@ const ioServer = (server: http.Server) => {
       io.emit("adminMessage", {
         message: {
           name: "admin",
-          content: `${username} has left the chat`,
+          content: `${socket.id} has left the chat`,
         },
         room: "lobby",
       });
