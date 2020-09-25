@@ -1,8 +1,5 @@
 const users2: { username: string; rooms: string[] }[] = [];
 const users: { username: string; socketID: string; rooms: string[] }[] = [];
-
-// users.push({ username: "kaem", rooms: ["lobby"] });
-
 const rooms = ["lobby"];
 const rooms2 = [
   {
@@ -85,9 +82,7 @@ export const createRoom = (roomName: string) => {
 
 export const removeUser = (id: string) => {
   if (!id) return { error: "No id provided" };
-  // username = username.trim();
 
-  // console.log("this is id:", id)
 
   // find index of the user
   const userForRemoval = users.find((user) => user.socketID === id);

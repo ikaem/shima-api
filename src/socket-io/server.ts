@@ -7,7 +7,6 @@ const ioServer = (server: http.Server) => {
   const io = socketio(server);
 
   io.on("connect", (socket) => {
-    // we could use handshake to set username's id inside the user's object in the users array
     console.log("We have a connection", socket.id);
     console.log("This is the handshake", socket.handshake.query.username);
 
@@ -113,15 +112,9 @@ const ioServer = (server: http.Server) => {
     );
 
     // disconnect event on socket
-    // socket.on("disconnect", (data: { name: string }) => {
     socket.on("disconnect", () => {
-      console.log("the socket has disconnected");
-
-      // console.log("this is name on disconnect:", data.name);
 
       // remove user from users object
-
-      // const { error, username } = removeUser(data.name);
       const { error, username } = removeUser(socket.id);
 
       if (error) console.log("There is no such user");
@@ -144,7 +137,6 @@ const ioServer = (server: http.Server) => {
     });
   });
 
-  //   return io;
 };
 
 export default ioServer;
