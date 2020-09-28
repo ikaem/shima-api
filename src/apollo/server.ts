@@ -12,10 +12,6 @@ const server = new ApolloServer({
   },
 });
 
-// export default (app: e.Application) => {
-//   server.applyMiddleware({ app, path: "/graphql" });
-// };
-
 export default {
   attach: (app: e.Application) => {
     server.applyMiddleware({ app, path: "/graphql" });
